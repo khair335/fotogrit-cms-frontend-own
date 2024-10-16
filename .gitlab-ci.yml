@@ -1,0 +1,140 @@
+variables:
+  PROJECT_NAME: "fotogrit-new-cms"
+  PROJECT_NAME_STAGING: "fotogrit-new-cms-staging"
+  IMAGE_COMMIT_TAG: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_TAG}
+
+
+stages:
+  - versioning
+  - deployment
+  - quality-check
+
+## VERSIONING (cms.fotogrit.id) ##############################################
+version-build:
+  stage: versioning
+  image: docker:stable
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+  script:
+    - docker build
+      -t ${IMAGE_COMMIT_TAG}
+      --build-arg VITE_PRODUCTION=true 
+      --build-arg VITE_SERVER=production
+      -f Dockerfile .
+    - docker push ${IMAGE_COMMIT_TAG} 
+  only:
+    - tags
+  tags: 
+    - fg-exa-dev
+
+## development setting #############################################################################
+cms-dev.fotogrit.id:
+  stage: deployment
+  image: docker:stable
+  services:
+    - docker:dind
+  before_script:
+    - sudo mkdir -p /root/storage/${PROJECT_NAME}/sonar-scan 
+    - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+    - docker stop ${PROJECT_NAME} 2> /dev/null || true
+    - docker rm ${PROJECT_NAME} 2> /dev/null || true
+
+  script:
+    - docker build
+      -t ${PROJECT_NAME}
+      --build-arg VITE_PRODUCTION=false 
+      --build-arg VITE_SERVER=development
+      -f Dockerfile .
+    - docker run -d
+      -p 8306:5173
+      --restart unless-stopped
+      --name=${PROJECT_NAME}
+      --env VITE_PRODUCTION=false
+      --env VITE_SERVER=development
+      --network=bridge ${PROJECT_NAME}
+  only:
+    - master
+  tags:
+    - fg-exa-dev
+
+## staging setting ###########################
+fotogrit-cms-staging.lumoshive.net:
+  stage: deployment
+  image: docker:stable
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+    - docker stop ${PROJECT_NAME_STAGING} 2> /dev/null || true
+    - docker rm ${PROJECT_NAME_STAGING} 2> /dev/null || true
+
+  script:
+    - docker build
+      -t ${PROJECT_NAME_STAGING}
+      --build-arg VITE_PRODUCTION=true
+      --build-arg VITE_SERVER=staging
+      -f Dockerfile .
+    - docker run -d
+      -p 8333:5173
+      --restart unless-stopped
+      --name=${PROJECT_NAME_STAGING}
+      --env VITE_PRODUCTION=true
+      --env VITE_SERVER=staging
+      --network=bridge ${PROJECT_NAME_STAGING}
+  only:
+    - master
+  tags:
+    - biznet-lumos-staging
+
+## production setting ###########################
+cms.fotogrit.id:
+  stage: deployment
+  image: docker:stable
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+    - docker stop ${PROJECT_NAME} 2> /dev/null || true
+    - docker rm ${PROJECT_NAME} 2> /dev/null || true
+
+  script:
+    - docker run -d
+      -p 8333:5173
+      --restart unless-stopped
+      --name=${PROJECT_NAME}
+      --env VITE_PRODUCTION=true
+      --env VITE_SERVER=production
+      --network=bridge ${IMAGE_COMMIT_TAG}
+  only:
+    - tags
+  tags:
+    - fotogrit-live
+  when: manual 
+  
+## QUALITY CHECK ########################################################################## 
+quality-check:
+  stage: quality-check
+  image: 
+     name: sonarsource/sonar-scanner-cli:latest
+     entrypoint: [""]
+
+  before_script: 
+    - sudo rm -r /root/storage/${PROJECT_NAME}/sonar-scan
+    - sudo mkdir -p /root/storage/${PROJECT_NAME}/sonar-scan    
+    
+  script: 
+    - sudo cp -r . /root/storage/${PROJECT_NAME}/sonar-scan
+    
+    - docker run 
+      -v /root/storage/${PROJECT_NAME}/sonar-scan:/usr/src
+      sonarsource/sonar-scanner-cli:4.6 
+      -Dsonar.projectKey=${PROJECT_NAME}
+      -Dsonar.host.url=${SONAR_HOST_URL} 
+      -Dsonar.login=${SONAR_TOKEN}
+  allow_failure: true
+  only:
+    - master
+  tags:
+    - fg-exa-dev
