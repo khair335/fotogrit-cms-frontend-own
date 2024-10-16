@@ -142,7 +142,7 @@ const FormAddRosterList = (props) => {
   return (
     <tr>
       {/* Form fields */}
-      <td className="text-left px-6 py-4 text-gray-500 ">{eventCode}</td>
+      <td className="min-w-40 max-w-40 text-left px-6 py-4 text-gray-500 ">{eventCode}</td>
       <td className="text-left px-6 py-4 text-gray-500">{teamCode}</td>
       <td className="min-w-40 max-w-40  text-left px-6 py-4 text-gray-500">{rosterCode}</td>
       <td className="min-w-40 max-w-40  text-left px-6 py-4 text-gray-500">

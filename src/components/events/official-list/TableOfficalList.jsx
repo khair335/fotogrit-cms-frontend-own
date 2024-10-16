@@ -67,7 +67,7 @@ const TableOfficialList = (props) => {
             <thead>
               <tr className="bg-white  border-b border-gray-200">
                 <th
-                  className="px-6 py-3 text-left text-sm font-extrabold text-black cursor-pointer"
+                  className="min-w-40 max-w-40 px-6 py-3 text-left text-sm font-extrabold text-black cursor-pointer"
                   onClick={() => handleSort('event_code')}
                 >
                   <div className="flex items-center">
