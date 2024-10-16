@@ -93,6 +93,14 @@ const OfficialList = (props) => {
   const disableOfficial = isTodayOrAfterLockDate(lockOfficialDate);
 
   const handleClickButtonAddOfficial = () => {
+     if (!eventGroupID) {
+      toast.error('Please select an event group before adding a roster.');
+      return;
+    }
+    if (!filterSelectedOfficialTeam) {
+      toast.error('Please select a team before adding a roster.');
+      return;
+    }
     if (disableOfficial && !isAdmin) {
       setIsOpenPopUp(true);
     } else {

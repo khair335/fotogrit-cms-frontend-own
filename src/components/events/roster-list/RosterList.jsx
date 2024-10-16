@@ -88,8 +88,15 @@ const RosterList = (props) => {
     return todayWithoutTime >= dateWithoutTime;
   };
   const disableRoster = isTodayOrAfterLockDate(lockRosterDate);
-
   const handleClickButtonAddRoster = () => {
+    if (!eventGroupID) {
+      toast.error('Please select an event group before adding a roster.');
+      return;
+    }
+    if (!filterSelectedRosterTeam) {
+      toast.error('Please select a team before adding a roster.');
+      return;
+    }
     if (disableRoster && !isAdmin) {
       setIsOpenPopUp(true);
     } else {
