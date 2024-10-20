@@ -1,10 +1,11 @@
-import { useState } from 'react';
-import { MdArrowDropUp, MdArrowDropDown } from 'react-icons/md';
+import DataTable from 'react-data-table-component';
+
 import { ButtonAction, Pagination } from '@/components';
 import { ErrorFetchingData, NoDataMessage } from '@/components/Errors';
 import { SkeletonTable } from '../../Skeleton';
+import { customTableStyles } from '@/constants/tableStyle';
 
-const TableOfficialList = (props) => {
+const TableOffcialList = (props) => {
   const {
     data,
     isLoading,
@@ -18,40 +19,70 @@ const TableOfficialList = (props) => {
     limitPerPage,
     currentPage,
     eventGroupID,
-    officialAddForm,
-    optionsTeams,
-    filterSelectedOfficialTeam,
   } = props;
 
   const totalPages = metaPagination?.total_page;
   const totalRecords = metaPagination?.total_record;
 
-  const teamCode = optionsTeams?.find((item) => item?.value === filterSelectedOfficialTeam)?.label;
-
-  // State for sorting
-  const [sortColumn, setSortColumn] = useState('');
-  const [sortDirection, setSortDirection] = useState('asc');
-
-  // Handle sorting when column is clicked
-  const handleSort = (column) => {
-    const direction = sortColumn === column && sortDirection === 'asc' ? 'desc' : 'asc';
-    setSortColumn(column);
-    setSortDirection(direction);
-  };
-
-  // Sort data based on column and direction
-  const sortedData = data && [...data]?.sort((a, b) => {
-    if (sortDirection === 'asc') {
-      return a[sortColumn] > b[sortColumn] ? 1 : -1;
-    }
-    return a[sortColumn] < b[sortColumn] ? 1 : -1;
-  });
-
-  // Render sorting icon based on column and direction
-  const renderSortIcon = (column) => {
-    if (sortColumn !== column) return null;
-    return sortDirection === 'asc' ? <MdArrowDropUp className="text-2xl" /> : <MdArrowDropDown className="text-2xl" />;
-  };
+  const columns = [
+    {
+      name: 'Official ID',
+      selector: (row) => row.code,
+      sortable: true,
+      width: '120px',
+    },
+    {
+      name: 'Event Group',
+      selector: (row) => row.event_code || '-',
+      sortable: true,
+      wrap: true,
+      minWidth: '200px',
+    },
+    {
+      name: 'Team',
+      selector: (row) => row.team,
+      cell: (row) => `${row?.team_code} ${row?.team}`,
+      sortable: true,
+      wrap: true,
+      minWidth: '160px',
+    },
+    {
+      name: 'Officials',
+      selector: (row) => row.officials,
+      cell: (row) => {
+        const officials = row?.officials
+          ? row?.officials?.map((official) => official.official_name).join(', ')
+          : '-';
+        return officials;
+      },
+      sortable: true,
+      minWidth: '140px',
+    },
+    {
+      name: 'User',
+      selector: (row) => row.user,
+      cell: (row) =>
+        `${row.user_code ? `${row.user_code} -` : ''} ${
+          row.user ? `${row.user}` : ''
+        }`,
+      sortable: true,
+      wrap: true,
+      minWidth: '140px',
+    },
+    {
+      name: 'Action',
+      center: true,
+      width: '100px',
+      cell: (props) => (
+        <ButtonAction
+          setGetData={setGetData}
+          setOpenModal={setOpenModal}
+          disabled={!eventGroupID}
+          {...props}
+        />
+      ),
+    },
+  ];
 
   return (
     <div>
@@ -61,106 +92,16 @@ const TableOfficialList = (props) => {
         <SkeletonTable />
       ) : isSuccess ? (
         <div className="border-t border-gray-200">
-          {/* Custom HTML Table */}
-          <table className="min-w-full border-collapse table-auto">
-            {/* Table Head */}
-            <thead>
-              <tr className="bg-white  border-b border-gray-200">
-                <th
-                  className="min-w-40 max-w-40 px-6 py-3 text-left text-sm font-extrabold text-black cursor-pointer"
-                  onClick={() => handleSort('event_code')}
-                >
-                  <div className="flex items-center">
-                    Group Code {renderSortIcon('event_code')}
-                  </div>
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-sm font-extrabold text-black cursor-pointer"
-                  onClick={() => handleSort('team_code')}
-                >
-                  <div className="flex items-center">
-                    Team Code {renderSortIcon('team_code')}
-                  </div>
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-sm font-extrabold text-black cursor-pointer"
-                  onClick={() => handleSort('code')}
-                >
-                  <div className="flex items-center">
-                    Officials ID {renderSortIcon('code')}
-                  </div>
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-sm font-extrabold text-black cursor-pointer"
-                  onClick={() => handleSort('officials')}
-                >
-                  <div className="flex items-center">
-                    Officials Role {renderSortIcon('officials')}
-                  </div>
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-sm font-extrabold text-black cursor-pointer"
-                  onClick={() => handleSort('user')}
-                >
-                  <div className="flex items-center">
-                    User {renderSortIcon('user')}
-                  </div>
-                </th>
-                <th className="px-6 py-3 text-center text-sm font-extrabold text-black">
-                  Action
-                </th>
-              </tr>
-            </thead>
+          <DataTable
+            columns={columns}
+            data={data}
+            fixedHeader
+            fixedHeaderScrollHeight="50vh"
+            customStyles={customTableStyles}
+            persistTableHead
+            noDataComponent={<NoDataMessage title="Official List" />}
+          />
 
-            {/* Table Body */}
-                <tbody>
-                    {officialAddForm}
-              {sortedData.length > 0 ? (
-                <>
-
-                  {sortedData.map((row, index) => (
-                    <tr key={index} className="border-b border-gray-200">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {row.event_code || '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {row?.team_code} {row?.team}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {row?.code}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {row?.officials
-                          ? row.officials
-                              .map((official) => official.official_name)
-                              .join(', ')
-                          : '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {row.user_code ? `${row.user_code} - ` : ''} {row.user || '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <ButtonAction
-                          setGetData={setGetData}
-                          setOpenModal={setOpenModal}
-                          disabled={!eventGroupID}
-                          {...row}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </>
-              ) : (
-                <tr>
-                  <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                    No data available
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-
-          {/* Pagination */}
           <Pagination
             currentPage={currentPage}
             setCurrentPage={setCurrentPage}
@@ -174,4 +115,4 @@ const TableOfficialList = (props) => {
   );
 };
 
-export default TableOfficialList;
+export default TableOffcialList;

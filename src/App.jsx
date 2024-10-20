@@ -65,6 +65,7 @@ import OthersMainPosition from "./pages/OthersMainPosition";
 import CoinManagement from "./pages/CoinManagement";
 import ReportDashboard from "./pages/ReportDashboard";
 import SponsorMaster from "./pages/SponsorMaster";
+import News from './pages/News';
 
 function App() {
   const modules = useSelector(selectCurrentModules);
@@ -299,6 +300,9 @@ function App() {
           )}
           {isPermission[42]?.can_menu && (
             <Route path="/sponsor-master" element={<SponsorMaster />} />
+          )}
+          {isPermission[42]?.can_menu && (
+            <Route path="/news" element={<News />} />
           )}
           <Route path="/others">
             {isPermission[17]?.can_menu && (

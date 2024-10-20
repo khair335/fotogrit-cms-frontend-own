@@ -52,6 +52,7 @@ const OfficialList = (props) => {
   const metaPagination = data?.meta;
   const officials = data?.data?.event_official;
   const officialCode = data?.data?.event_official_code;
+  console.log('Shahadat', data);
 
   const [deleteOfficialList, { isLoading: isLoadingDelete }] =
     useDeleteOfficialListMutation();
@@ -93,14 +94,6 @@ const OfficialList = (props) => {
   const disableOfficial = isTodayOrAfterLockDate(lockOfficialDate);
 
   const handleClickButtonAddOfficial = () => {
-     if (!eventGroupID) {
-      toast.error('Please select an event group before adding a roster.');
-      return;
-    }
-    if (!filterSelectedOfficialTeam) {
-      toast.error('Please select a team before adding a roster.');
-      return;
-    }
     if (disableOfficial && !isAdmin) {
       setIsOpenPopUp(true);
     } else {
@@ -118,21 +111,7 @@ const OfficialList = (props) => {
     value: item?.id,
     label: item?.official_name,
   }));
-  console.log("filterSelectedOfficialTeam", filterSelectedOfficialTeam)
 
-  const officialAddForm = isOpenNewData && (
-         <FormAddOfficialList
-          setIsOpenNewData={setIsOpenNewData}
-          optionsTeams={optionsTeams}
-          optionsCustomers={optionsCustomers}
-          officialCode={officialCode}
-          eventGroupID={eventGroupID}
-          eventGroupData={eventGroupData}
-          optionsOfficials={optionsOfficials}
-          filterSelectedOfficialTeam={filterSelectedOfficialTeam}
-
-        />
-  )
   return (
     <>
       <div
@@ -169,7 +148,7 @@ const OfficialList = (props) => {
         </div>
       </div>
 
-      {/* <Collapse isOpen={isOpenNewData}>
+      <Collapse isOpen={isOpenNewData}>
         <FormAddOfficialList
           setIsOpenNewData={setIsOpenNewData}
           optionsTeams={optionsTeams}
@@ -178,10 +157,8 @@ const OfficialList = (props) => {
           eventGroupID={eventGroupID}
           eventGroupData={eventGroupData}
           optionsOfficials={optionsOfficials}
-          filterSelectedOfficialTeam={filterSelectedOfficialTeam}
-
         />
-      </Collapse> */}
+      </Collapse>
 
       <div className="mt-4">
         <TableOfficialList
@@ -198,9 +175,6 @@ const OfficialList = (props) => {
           metaPagination={metaPagination}
           limitPerPage={limitPerPage}
           eventGroupID={eventGroupID}
-          officialAddForm={officialAddForm}
-          optionsTeams={optionsTeams}
-          filterSelectedOfficialTeam={filterSelectedOfficialTeam}
         />
       </div>
 

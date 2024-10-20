@@ -10,6 +10,7 @@ import {
   FaWallet,
   FaSignOutAlt,
   FaMoneyBillWave,
+  FaNewspaper,
 } from "react-icons/fa";
 import {
   FaCamera,
@@ -527,7 +528,7 @@ const Sidebar = ({ active }) => {
   const canAccessPaymentCart = modules[31]?.can_menu; // payment & cart
   const canAccessReports = modules[43]?.can_menu; // reports > transaction
   const canAccessSponsor = modules[42]?.can_menu; // sponsor
-
+  const canAccessNews = modules[42]?.can_menu; // news
   const modulesDummy = {
     can_menu: true,
     can_add: true,
@@ -818,7 +819,13 @@ const Sidebar = ({ active }) => {
       modules: canAccessSponsor,
       isProd: true,
     },
-
+    {
+      title: "News",
+      icon: <FaNewspaper />,
+      url: "/news",
+     modules: canAccessNews,
+      isProd: true,
+    },
     {
       title: "Wallet & Coins",
       icon: <GiTwoCoins />,

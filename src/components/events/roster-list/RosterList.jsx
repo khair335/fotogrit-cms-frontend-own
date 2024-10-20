@@ -9,7 +9,7 @@ import {
   PopUp,
   PopUpDelete,
 } from '@/components';
-import { FilterSearch, FilterSelect, Input, SelectInput } from '@/components/form-input';
+import { FilterSearch, FilterSelect } from '@/components/form-input';
 import FormAddRosterList from './FormAddRosterList';
 import TableRosterList from './TableRosterList';
 import FormDetailRosterList from './FormDetailRosterList';
@@ -88,15 +88,8 @@ const RosterList = (props) => {
     return todayWithoutTime >= dateWithoutTime;
   };
   const disableRoster = isTodayOrAfterLockDate(lockRosterDate);
+
   const handleClickButtonAddRoster = () => {
-    if (!eventGroupID) {
-      toast.error('Please select an event group before adding a roster.');
-      return;
-    }
-    if (!filterSelectedRosterTeam) {
-      toast.error('Please select a team before adding a roster.');
-      return;
-    }
     if (disableRoster && !isAdmin) {
       setIsOpenPopUp(true);
     } else {
@@ -107,30 +100,13 @@ const RosterList = (props) => {
   useEffect(() => {
     setIsOpenNewData(false);
   }, [eventGroupID]);
-  console.log("filterSelectedRosterTeam", filterSelectedRosterTeam)
-  console.log("eventGroupData", eventGroupData)
-  const eventCode = eventGroupData?.find((item) => item?.id === eventGroupID)?.code
-
-  const teamCode = optionsTeams?.find((item) => item?.value === filterSelectedRosterTeam)?.label
-  console.log("optionsTeams",optionsTeams)
-  const teamAddForm = isOpenNewData && (
-    <FormAddRosterList
-      optionsTeams={optionsTeams}
-      setIsOpenNewData={setIsOpenNewData}
-      optionsCustomers={optionsCustomers}
-      rosterCode={rosterCode}
-      eventGroupID={eventGroupID}
-      filterSelectedRosterTeam={filterSelectedRosterTeam}
-      eventGroupData={eventGroupData}
-    />
-  );
-
 
   return (
     <>
       <div
-        className={`flex flex-col-reverse gap-2 md:flex-row md:items-center  ${isAccess?.can_add ? 'md:justify-between' : 'md:justify-end'
-          }`}
+        className={`flex flex-col-reverse gap-2 md:flex-row md:items-center  ${
+          isAccess?.can_add ? 'md:justify-between' : 'md:justify-end'
+        }`}
       >
         {isAccess?.can_add && (
           <ButtonCollapse
@@ -161,18 +137,16 @@ const RosterList = (props) => {
         </div>
       </div>
 
-      {/* <Collapse isOpen={isOpenNewData}>
+      <Collapse isOpen={isOpenNewData}>
         <FormAddRosterList
           setIsOpenNewData={setIsOpenNewData}
           optionsTeams={optionsTeams}
           optionsCustomers={optionsCustomers}
           rosterCode={rosterCode}
           eventGroupID={eventGroupID}
-          filterSelectedRosterTeam={filterSelectedRosterTeam}
-
           eventGroupData={eventGroupData}
         />
-      </Collapse> */}
+      </Collapse>
 
       <div className="mt-4">
         <TableRosterList
@@ -189,10 +163,8 @@ const RosterList = (props) => {
           metaPagination={metaPagination}
           limitPerPage={limitPerPage}
           eventGroupID={eventGroupID}
-          teamAddForm={teamAddForm}
         />
       </div>
-
 
       {/* MODAL */}
       <Modal
